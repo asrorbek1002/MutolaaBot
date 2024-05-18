@@ -17,7 +17,7 @@ keyboard_button = [
         KeyboardButton(text="⁉️Yordam⁉️")
     ],
     [
-        KeyboardButton(text="Bot Statistika")
+        KeyboardButton(text="📊Bot Statistika📊")
     ]
 ]
 reply_markup = ReplyKeyboardMarkup(keyboard_button, resize_keyboard=True)
@@ -86,9 +86,9 @@ def view_book_for_send(update, context):
                 book_lang = bok[5]
                 book_about = bok[6]
                 context.bot.send_document(chat_id=user_id, document=book_id, caption=f"""
-👤: {book_author}
-📙: {book_name}
-🏴: {book_lang}
+👤Muallif: {book_author}
+📙Kitob nomi: {book_name}
+🏴Kitob tili: {book_lang}
 
 ❕Bu kitob: {book_about}""")
             else:

@@ -11,8 +11,8 @@ def start_addBook(update, context):
     first_name = update.message.from_user.first_name
     context.user_data['first_name'] = first_name
     context.user_data['user_id'] = user_id
-    rreply_markup = ReplyKeyboardMarkup([[KeyboardButton(text='❌Bekor qilish❌')]], resize_keyboard=True)
-    update.message.reply_text("Botga o'z hissangizni qo'shmoqchiligingizdan biz bag'oyatda hursandmiz.\n\n<i>Sizdan iltimos siz qo'shmoqchi bo'lgan kitob botda bormi yoki yo'qligini tekshirib ko'ring</i>\n\n<b>Unday bo'lsa boshladik!!! Kitobning nomini yozing...</b>", parse_mode="HTML", reply_markup=rreply_markup)
+    # rreply_markup = ReplyKeyboardMarkup([[KeyboardButton(text='❌Bekor qilish❌')]], resize_keyboard=True)
+    update.message.reply_text("Botga o'z hissangizni qo'shmoqchiligingizdan biz bag'oyatda hursandmiz.\n\n<i>Sizdan iltimos siz qo'shmoqchi bo'lgan kitob botda bormi yoki yo'qligini tekshirib ko'ring</i>\n\n<b>Unday bo'lsa boshladik!!! Kitobning nomini yozing...</b>\n\nJarayonni bekor qilish uchun /cancel ni bosing", parse_mode="HTML")
     return 'BOOK_TITLE'
 
 def book_title(update, context):
@@ -162,6 +162,7 @@ def admin_not_confirmed_book(update, context):
             else:
                 context.bot.send_message(chat_id=update.effective_chat.id, text="Ma'lumot topilmadi.")
         elif noldelete == 'ConfirmedBook':
+            book_name = " ".join(textlist)
                 # Kitob nomi bo'yicha ma'lumot qidirish
             cursor.execute("SELECT * FROM books WHERE book_title LIKE ?", ('%' + book_name + '%',))
             result = cursor.fetchone()
