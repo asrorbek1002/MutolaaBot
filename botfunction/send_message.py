@@ -7,11 +7,13 @@ ADMIN_ID = [6194484795]
 
 def send_menu(update, context):
     keyboard = [
-        [KeyboardButton(text="Oddiy xabar"), KeyboardButton(text="Video xabar")],
-        [KeyboardButton(text="Foto xabar"), KeyboardButton(text="Fayl xabar")],
+        [KeyboardButton(text="Oddiy xabar"), KeyboardButton(text="📹Video Xabar📹")],
+        [KeyboardButton(text="🖼Foto xabar🖼"), KeyboardButton(text="📁Fayl xabar📂")],
     ]
-    reply_markup = ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
+    reply_markup = ReplyKeyboardMarkup(keyboard, one_time_keyboard=True, resize_keyboard=True)
     update.message.reply_text('Qaysi turdagi xabarni yubormoqchisiz?', reply_markup=reply_markup)
+
+
 
 def xabarlar(update, context):
     text = update.message.text

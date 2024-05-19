@@ -9,6 +9,8 @@ from botfunction.view_book import view_book_for_send, view_book_for_send2, view_
 import sqlite3
 from functools import wraps
 from botfunction.global_text import START_TEXT, HELP
+from botfunction.admin_menu import admin_menu
+from botfunction.add_admin import start_add_admin, addd_admin
 
 # Logging konfiguratsiyasi
 logging.basicConfig(
@@ -186,6 +188,17 @@ def main():
         },
         fallbacks=[MessageHandler(Filters.regex(r"^🔙Ortga🔙$"), cancel)]
     ))
+
+    dispatcher.add_handler(CommandHandler('admin', admin_menu))
+    add_admin = ConversationHandler(
+        entry_points=[MessageHandler(Filters.regex(r"^➕Admin qo\'shish➕$"), start_add_admin)],
+        states={
+            'ADD_ADMIN': [MessageHandler(Filters.text & ~Filters.command, addd_admin)],
+        },
+        fallbacks=[CommandHandler('cancel', cancel)]
+    )
+    dispatcher.add_handler(add_admin)
+
     dispatcher.add_handler(MessageHandler(Filters.regex(r"^📊Bot Statistika📊$"), stats))
     dispatcher.add_handler(CommandHandler('book_title', view_book_for_send))
 

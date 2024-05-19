@@ -1,7 +1,7 @@
 import sqlite3
 from telegram import InlineKeyboardButton,  InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
 from telegram.ext import ConversationHandler
-# from ..main import start
+
 
 A_STATUS = "Tasdiqlanmagan"
 B_STATUS = "Tasdiqlangan"
