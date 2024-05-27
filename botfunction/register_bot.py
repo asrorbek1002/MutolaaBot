@@ -1,6 +1,6 @@
 import logging
 from telegram import ReplyKeyboardMarkup, KeyboardButton
-from telegram.ext import ConversationHandler
+from telegram.ext import ConversationHandler, CommandHandler, MessageHandler, Filters
 import sqlite3
 from .geo_name import get_location_name
 
@@ -8,13 +8,13 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 
 
-# def register_start(update, context):
-#     reply_text = 'Salom! telefon raqamingizni kiriting:'
-#     reply_markup = ReplyKeyboardMarkup([
-#         [KeyboardButton(text="Telefon kontaktinngizni ulashing", request_contact=True)]
-#     ], resize_keyboard=True, one_time_keyboard=True)
-#     context.bot.send_message(chat_id=update.effective_user.id, text=reply_text, reply_markup=reply_markup)
-#     return 'PHONE_NUMBER'
+def register_start(update, context):
+    reply_text = 'Salom! telefon raqamingizni kiriting:'
+    reply_markup = ReplyKeyboardMarkup([
+        [KeyboardButton(text="Telefon kontaktinngizni ulashing", request_contact=True)]
+    ], resize_keyboard=True, one_time_keyboard=True)
+    context.bot.send_message(chat_id=update.effective_user.id, text=reply_text, reply_markup=reply_markup)
+    return 'PHONE_NUMBER'
 
 
 def phone_number(update, context):
@@ -59,7 +59,8 @@ def geolocation(update, context):
     user_id = update.message.from_user.id
     latitude = update.message.location.latitude
     longitude = update.message.location.longitude
-    address = get_location_name(latitude, longitude)
+    # address = get_location_name(latitude, longitude)
+    address = "None"
     context.user_data['user_id'] = user_id
     context.user_data['latitude'] = latitude
     context.user_data['longitude'] = longitude
@@ -78,7 +79,7 @@ def geolocation(update, context):
         context.user_data['latitude'],
         context.user_data['longitude'],
     )
-              )
+            )
     conn.commit()
     conn.close()
     logging.info("User Registered")
@@ -91,3 +92,20 @@ def cancel(update, context):
     return ConversationHandler.END
 
 
+
+def register_handler():
+    register_handler = ConversationHandler(
+        entry_points=[CommandHandler('start', register_start)],
+
+        states={
+            'PHONE_NUMBER': [MessageHandler(Filters.contact & ~Filters.command, phone_number)],
+            'FIRST_NAME': [MessageHandler(Filters.text & ~Filters.command, first_name)],
+            'LAST_NAME': [MessageHandler(Filters.text & ~Filters.command, last_name)],
+            'AGE': [MessageHandler(Filters.text & ~Filters.command, age)],
+            'GENDER': [MessageHandler(Filters.text & ~Filters.command, gender)],
+            'GEOLOCATION': [MessageHandler(Filters.location & ~Filters.command, geolocation)],
+
+        },
+        fallbacks=[CommandHandler('cancel', cancel)]
+    )
+    return register_handler

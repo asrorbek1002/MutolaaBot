@@ -1,16 +1,17 @@
 import logging
-from telegram import KeyboardButton, ReplyKeyboardMarkup, ChatAction
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler
+from telegram import KeyboardButton, ReplyKeyboardMarkup
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler, CallbackQueryHandler, InlineQueryHandler
 from botfunction.wikipedia_func import search, start_search
 from botfunction.register_bot import first_name, last_name, age, gender, geolocation, phone_number
-from botfunction.add_book_base import start_addBook, book_about, book_author, book_file, book_lang, book_title, \
-    admin_not_confirmed_book
-from botfunction.view_book import view_book_for_send, view_book_for_send2, view_menu, text_menu
+from botfunction.add_book_base import admin_not_confirmed_book, add_book_base_handler
+from botfunction.view_book import view_book_hand, view_book_for_send
 import sqlite3
 from functools import wraps
 from botfunction.global_text import START_TEXT, HELP
 from botfunction.admin_menu import admin_menu
 from botfunction.add_admin import start_add_admin, addd_admin
+from botfunction.del_admin import del_adminstart, del_admindel
+from botfunction.users_date import menu_date, all_user, inlie_menu_date, nameuserdatehand, user_id_datehand
 
 # Logging konfiguratsiyasi
 logging.basicConfig(
@@ -33,7 +34,6 @@ c.execute("""CREATE TABLE IF NOT EXISTS users
             longitude REAL
             );
 """)
-
 c.execute("""CREATE TABLE IF NOT EXISTS books
           (user_id INTEGER,
           first_name TEXT,
@@ -44,6 +44,7 @@ c.execute("""CREATE TABLE IF NOT EXISTS books
           book_about TEXT,
           status TEXT)""")
 conn.commit()
+
 
 # Foydalanuvchiga ko'rinadigan tugmalar
 keyboard_button = [
@@ -60,17 +61,6 @@ keyboard_button = [
     ]
 ]
 reply_markup = ReplyKeyboardMarkup(keyboard_button, resize_keyboard=True)
-
-
-def send_typing_action(func):
-    """Sends typing action while processing func command."""
-
-    @wraps(func)
-    def command_func(update, context, *args, **kwargs):
-        context.bot.send_chat_action(chat_id=update.effective_message.chat_id, action=ChatAction.TYPING)
-        return func(update, context, *args, **kwargs)
-
-    return command_func
 
 
 # /start buyrug'iga javob qaytarish
@@ -104,9 +94,6 @@ def cancel(update, context):
     update.message.reply_text(text='Jarayon bekor qilindi!', reply_markup=reply_markup)
     return ConversationHandler.END
 
-
-
-
 def get_user_count():
     conn = sqlite3.connect('MutolaaBot.db')
     c = conn.cursor()
@@ -130,6 +117,8 @@ def stats(update, context):
 
 def help(update, context):
     update.message.reply_text(text=HELP, parse_mode="HTML")
+
+
 
 def main():
     """Start the bot."""
@@ -157,19 +146,8 @@ def main():
     )
     dispatcher.add_handler(register_handler)
 
-    add_book_hand = ConversationHandler(
-        entry_points=[MessageHandler(Filters.regex(r"^📚Kitob qo'shish📚$"), start_addBook)],
-        fallbacks=[CommandHandler('cancel', cancel)],
-        states={
-            'BOOK_TITLE': [MessageHandler(Filters.text & ~Filters.command, book_title)],
-            'BOOK_AUTHOR': [MessageHandler(Filters.text & ~Filters.command, book_author)],
-            'BOOK_LANG': [MessageHandler(Filters.text & ~Filters.command, book_lang)],
-            'BOOK_ABOUT': [MessageHandler(Filters.text & ~Filters.command, book_about)],
-            'BOOK_FILE': [MessageHandler(Filters.document & ~Filters.command, book_file)]
-        }
 
-    )
-    dispatcher.add_handler(add_book_hand)
+    dispatcher.add_handler(add_book_base_handler())
 
     dispatcher.add_handler(ConversationHandler(
         entry_points=[MessageHandler(Filters.regex(r"^🌐Wikipedia🌐"), start_search)],
@@ -179,33 +157,37 @@ def main():
         fallbacks=[MessageHandler(Filters.regex("^🔙Ortga qaytish🔙$"), cancel)]
     ))
 
-    dispatcher.add_handler(ConversationHandler(
-        entry_points=[MessageHandler(Filters.regex(r"^📖Kitob o'qish📖$"), view_menu)],
-        states={
-            'START_VIEW': [MessageHandler(Filters.text, text_menu)],
-            'START_BOOK_TITLE_VIEW': [MessageHandler(Filters.text, view_book_for_send)],
-            'START_BOOK_AUTHOR_VIEW': [MessageHandler(Filters.text, view_book_for_send2)]
-        },
-        fallbacks=[MessageHandler(Filters.regex(r"^🔙Ortga🔙$"), cancel)]
-    ))
+    dispatcher.add_handler(view_book_hand())
 
     dispatcher.add_handler(CommandHandler('admin', admin_menu))
     add_admin = ConversationHandler(
-        entry_points=[MessageHandler(Filters.regex(r"^➕Admin qo\'shish➕$"), start_add_admin)],
+        entry_points=[MessageHandler(Filters.regex(r"^➕Admin qo'shish➕$"), start_add_admin)],
         states={
-            'ADD_ADMIN': [MessageHandler(Filters.text & ~Filters.command, addd_admin)],
+            'ADD_ADMIN': [MessageHandler(Filters.text & ~Filters.command, addd_admin)]            
         },
         fallbacks=[CommandHandler('cancel', cancel)]
     )
     dispatcher.add_handler(add_admin)
 
+    del_admin = ConversationHandler(
+        entry_points=[MessageHandler(Filters.regex(r"^➖Admin o'chirish➖$"), del_adminstart)],
+        states={
+            'DELL_ADMIN': [MessageHandler(Filters.text & ~Filters.command, del_admindel)]
+        },
+        fallbacks=[CommandHandler('cancel', cancel)]
+    )
+    dispatcher.add_handler(del_admin)
+    dispatcher.add_handler(nameuserdatehand())
+    dispatcher.add_handler(user_id_datehand())
     dispatcher.add_handler(MessageHandler(Filters.regex(r"^📊Bot Statistika📊$"), stats))
+    dispatcher.add_handler(MessageHandler(Filters.regex(r"^👤Foydalnuvchi malumoti📝$"), menu_date))
+    dispatcher.add_handler(MessageHandler(Filters.regex(r"^Barcha foydalanuvchilar$"), all_user))
+    dispatcher.add_handler(MessageHandler(Filters.regex(r"^Bitta foydalanuvchi$"), inlie_menu_date))
     dispatcher.add_handler(CommandHandler('book_title', view_book_for_send))
 
     # Botni ishga tushirish
     updater.start_polling()
     updater.idle()
-
 
 if __name__ == '__main__':
     main()

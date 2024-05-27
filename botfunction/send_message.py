@@ -3,7 +3,14 @@ import sqlite3
 from telegram import TelegramError, KeyboardButton, ReplyKeyboardMarkup
 from telegram.ext import ConversationHandler
 
-ADMIN_ID = [6194484795]
+conn = sqlite3.connect('MutolaaBot.db')
+cursor = conn.cursor()
+# Ma'lumotlarni olish
+cursor.execute("SELECT user_id FROM admins")
+results = cursor.fetchall()
+print(results[0])
+print(results)
+ADMIN_ID = results
 
 def send_menu(update, context):
     keyboard = [
@@ -28,17 +35,17 @@ def xabarlar(update, context):
     elif text == "Fayl xabar":
         update.message.reply_text('Yubormoqchi bo\'lgan faylni yuboring')
         return 'FAYL_MESSAGE'
+    
 def send_mm(update, context):
     user_id = update.message.from_user.id
     if user_id in ADMIN_ID:
         update.message.reply_text("Foydalanuvchilarga yubormoqchi bo'lga xabarni kiriting...")
-    else:
-        pass
+    else:pass
     return 'SEND_MESSAGE1'
 
 def send_m(update, context):
     # SQLite bazasiga ulanish
-    conn = sqlite3.connect('../MutolaaBot.db')
+    conn = sqlite3.connect('MutolaaBot.db')
     cursor = conn.cursor()
     # Ma'lumotlarni olish
     cursor.execute("SELECT user_id FROM users")

@@ -1,17 +1,21 @@
 import sqlite3
 from telegram.ext import ConversationHandler
+from telegram.error import TelegramError
 
 
 def del_admin(user_id):
-    conn = sqlite3.connect('../MutolaaBot.db')
+    user_id = user_id
+    conn = sqlite3.connect('MutolaaBot.db')
     c = conn.cursor()
-    try:
+    c.execute("SELECT * FROM admins WHERE user_id=?", (user_id,))
+    people = c.fetchone()
+    print(people)
+    if people:
         c.execute('DELETE FROM admins WHERE user_id=?', (user_id,))
         conn.commit()
         conn.close()
         return True
-    except Exception as e:
-        print(e)
+    elif people is None:
         return False
 
 
@@ -22,11 +26,13 @@ def del_adminstart(update, context):
 
 def del_admindel(update, context):
     del_user_id = update.message.text
+    print(type(del_user_id))
     user_id = update.message.from_user.id
-    conn = sqlite3.connect('../MutolaaBot.db')
+    conn = sqlite3.connect('MutolaaBot.db')
     c = conn.cursor()
-    c.execute("SELECT user_id FROM admins WHERE user_id = ?", (user_id))
-    yes_admin = c.fetchone()
+    # c.execute("SELECT user_id FROM admins WHERE user_id = ?", (user_id))
+    yes_admin = 'True'
+    print(yes_admin)
     if yes_admin:
         delete = del_admin(user_id=del_user_id)
         if delete is True:

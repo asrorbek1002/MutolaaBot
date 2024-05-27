@@ -1,6 +1,6 @@
 import sqlite3
 from telegram import InlineKeyboardButton,  InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
-from telegram.ext import ConversationHandler
+from telegram.ext import ConversationHandler, MessageHandler, CommandHandler, Filters
 
 
 A_STATUS = "Tasdiqlanmagan"
@@ -123,3 +123,19 @@ def view_book_for_send2(update, context):
     else:
         update.message.reply_text("<b>Kitob topilmadi🫤</b>.\nBotimizni tark etmang tez orada ko'plab kitoblar qo'shiladi.", parse_mode="HTML", reply_markup=reply_markup)
         return ConversationHandler.END
+
+def cancel(update, context):
+    update.message.reply_text(text='Jarayon bekor qilindi!', reply_markup=reply_markup)
+    return ConversationHandler.END
+
+def view_book_hand():
+    book_view_handler = (ConversationHandler(
+        entry_points=[MessageHandler(Filters.regex(r"^📖Kitob o'qish📖$"), view_menu)],
+        states={
+            'START_VIEW': [MessageHandler(Filters.text, text_menu)],
+            'START_BOOK_TITLE_VIEW': [MessageHandler(Filters.text, view_book_for_send)],
+            'START_BOOK_AUTHOR_VIEW': [MessageHandler(Filters.text, view_book_for_send2)]
+        },
+        fallbacks=[MessageHandler(Filters.regex(r"^🔙Ortga🔙$"), cancel)]
+    ))
+    return book_view_handler

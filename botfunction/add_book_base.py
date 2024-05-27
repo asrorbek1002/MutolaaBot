@@ -1,10 +1,30 @@
 import sqlite3
 from telegram import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
-from telegram.ext import ConversationHandler
+from telegram.ext import ConversationHandler, CommandHandler, MessageHandler, Filters
 
 ADMIN_ID = 6194484795
 A_STATUS = "Tasdiqlanmagan"
 B_STATUS = "Tasdiqlangan"
+
+
+
+# Foydalanuvchiga ko'rinadigan tugmalar
+keyboard_button = [
+    [
+        KeyboardButton(text="📖Kitob o'qish📖"),
+        KeyboardButton(text="📚Kitob qo'shish📚")
+    ],
+    [
+        KeyboardButton(text="🌐Wikipedia🌐"),
+        KeyboardButton(text="⁉️Yordam⁉️")
+    ],
+    [
+        KeyboardButton(text="📊Bot Statistika📊")
+    ]
+]
+reply_markup = ReplyKeyboardMarkup(keyboard_button, resize_keyboard=True)
+
+
 
 def start_addBook(update, context):
     user_id = update.message.from_user.id
@@ -38,8 +58,6 @@ def book_about(update, context):
     context.user_data['book_about'] = book_about
     update.message.reply_text(f"Qoyilmaqom🤩\n<b>📓 Kitob nomi: {context.user_data['book_title']}\n👤Muallif: {context.user_data['book_author']}\n🌐Kitob tili: {context.user_data['book_lang']}\n\n📖Kitob haqida: <i>{context.user_data['book_about']}</i></b>\n\n<b>Endi kitobning PDF shaklini menga yuboring</b>.", parse_mode="HTML")
     return 'BOOK_FILE'
-
-
 
 def book_file(update, context):
     first_name = update.message.from_user.first_name
@@ -110,32 +128,6 @@ Status: {A_STATUS}""", parse_mode="HTML", reply_markup=InlineKeyboardMarkup([
     ]
 ]))
 
-
-# def admin_confirm_book(update, context):
-#     text = context.args[0]
-#     textlist = text.split("_")
-#     noldelete = textlist.pop(0)  
-#     book_name = " ".join(textlist)
-#     conn = sqlite3.connect("MutolaaBot.db")
-    # cursor = conn.cursor()
-    # # Kitob nomi bo'yicha ma'lumot qidirish
-    # cursor.execute("SELECT * FROM books WHERE book_title LIKE ?", ('%' + book_name + '%',))
-    # result = cursor.fetchone()
-    # user_id = result[0]
-    # first_name = result[1]
-
-    # # Agar malumot topilsa
-    # if result:
-    #     # Statusni "Tasdiqlangan" deb o'zgartirish
-    #     cursor.execute("UPDATE books SET status = ? WHERE book_title = ?", (B_STATUS, book_name))
-    #     conn.commit()
-    #     context.bot.send_message(chat_id=user_id, text=f'{first_name} tabriklayman kitobingiz tasdiqdan o\'tdi!\n\nSiz joylagan kitobdan endi hamma foydalanishi mumkin.')
-    #     print(f"Kitob nomi \"{book_name}\" uchun status \"Tasdiqlangan\" ga o'zgartirildi.")
-    # else:
-    #     print("Uzr, malumot topilmadi.")
-    # print(book_name)
-    # print(text)
-
 def admin_not_confirmed_book(update, context):
     text = context.args
     text2 = text[0]
@@ -180,3 +172,21 @@ def admin_not_confirmed_book(update, context):
                 print("Uzr, malumot topilmadi.")
     else:
         pass
+
+def cancel(update, context):
+    update.message.reply_text(text='Jarayon bekor qilindi!', reply_markup=reply_markup)
+    return ConversationHandler.END
+
+def add_book_base_handler():
+    add_book_hand = ConversationHandler(
+        entry_points=[MessageHandler(Filters.regex(r"^📚Kitob qo'shish📚$"), start_addBook)],
+        fallbacks=[CommandHandler('cancel', cancel)],
+        states={
+            'BOOK_TITLE': [MessageHandler(Filters.text & ~Filters.command, book_title)],
+            'BOOK_AUTHOR': [MessageHandler(Filters.text & ~Filters.command, book_author)],
+            'BOOK_LANG': [MessageHandler(Filters.text & ~Filters.command, book_lang)],
+            'BOOK_ABOUT': [MessageHandler(Filters.text & ~Filters.command, book_about)],
+            'BOOK_FILE': [MessageHandler(Filters.document & ~Filters.command, book_file)]
+        }
+    )
+    return add_book_hand

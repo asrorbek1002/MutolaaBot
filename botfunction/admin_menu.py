@@ -7,14 +7,14 @@ ADMIN_ID = []
 def admin_menu(update, context):
     user_id = update.message.from_user.id
     print(user_id)
-    conn = sqlite3.connect('../MutolaaBot.db')
+    conn = sqlite3.connect('MutolaaBot.db')
     c = conn.cursor()
     c.execute("SELECT * FROM admins WHERE user_id = ?", (user_id,))
     user_idd = c.fetchone()
     keyboard = [
         [
             KeyboardButton(text='✍️Xabar yuborish✍️'),
-            KeyboardButton(text='Foydalnuvchi malumoti'),
+            KeyboardButton(text='👤Foydalnuvchi malumoti📝'),
         ],
         [
             KeyboardButton(text='➕Admin qo\'shish➕'),
