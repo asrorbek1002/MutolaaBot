@@ -59,8 +59,7 @@ def geolocation(update, context):
     user_id = update.message.from_user.id
     latitude = update.message.location.latitude
     longitude = update.message.location.longitude
-    # address = get_location_name(latitude, longitude)
-    address = "None"
+    address = get_location_name(latitude, longitude)
     context.user_data['user_id'] = user_id
     context.user_data['latitude'] = latitude
     context.user_data['longitude'] = longitude
