@@ -121,4 +121,4 @@ def register_handler():
         },
         fallbacks=[CommandHandler('cancel', cancel)]
     )
-    return register_hand
+    return register_handler
