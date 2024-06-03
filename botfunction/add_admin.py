@@ -1,7 +1,5 @@
 import sqlite3
-import json
-
-from telegram.ext import ConversationHandler
+from telegram.ext import ConversationHandler, CommandHandler, Filters, MessageHandler
 
 conn = sqlite3.connect('./MutolaaBot.db')
 c = conn.cursor()
@@ -44,3 +42,21 @@ def addd_admin(update, context):
     else:
         update.message.reply_text("Bunday foydalanuvchi botda yo'q")
     return ConversationHandler.END
+
+
+# ConversationHandlerni tugatish uchun funksiya
+def cancel(update, context):
+    update.message.reply_text(text='Jarayon bekor qilindi!')
+    return ConversationHandler.END
+
+
+
+def add_admin_hand():
+    add_admin = ConversationHandler(
+        entry_points=[MessageHandler(Filters.regex(r"^➕Admin qo'shish➕$"), start_add_admin)],
+        states={
+            'ADD_ADMIN': [MessageHandler(Filters.text & ~Filters.command, addd_admin)]            
+        },
+        fallbacks=[CommandHandler('cancel', cancel)]
+    )
+    return add_admin

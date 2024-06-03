@@ -19,6 +19,9 @@ def admin_menu(update, context):
         [
             KeyboardButton(text='➕Admin qo\'shish➕'),
             KeyboardButton(text='➖Admin o\'chirish➖'),
+        ],
+        [
+        KeyboardButton(text="📊Bot Statistika📊")
         ]
     ]
     reply_markup = ReplyKeyboardMarkup(keyboard, one_time_keyboard=True, resize_keyboard=True)

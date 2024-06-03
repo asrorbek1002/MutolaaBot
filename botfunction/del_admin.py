@@ -1,5 +1,5 @@
 import sqlite3
-from telegram.ext import ConversationHandler
+from telegram.ext import ConversationHandler, MessageHandler, Filters,  CommandHandler
 from telegram.error import TelegramError
 
 
@@ -43,3 +43,21 @@ def del_admindel(update, context):
     elif yes_admin is None:
         update.message.reply_text("Siz admin emassiz")
     return ConversationHandler.END
+
+
+# ConversationHandlerni tugatish uchun funksiya
+def cancel(update, context):
+    update.message.reply_text(text='Jarayon bekor qilindi!')
+    return ConversationHandler.END
+
+
+
+def del_admin_hand():
+    del_admin = ConversationHandler(
+        entry_points=[MessageHandler(Filters.regex(r"^➖Admin o'chirish➖$"), del_adminstart)],
+        states={
+            'DELL_ADMIN': [MessageHandler(Filters.text & ~Filters.command, del_admindel)]
+        },
+        fallbacks=[CommandHandler('cancel', cancel)]
+    )
+    return del_admin

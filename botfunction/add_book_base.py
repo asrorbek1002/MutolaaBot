@@ -2,6 +2,7 @@ import sqlite3
 from telegram import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ConversationHandler, CommandHandler, MessageHandler, Filters
 
+
 ADMIN_ID = 6194484795
 A_STATUS = "Tasdiqlanmagan"
 B_STATUS = "Tasdiqlangan"
@@ -17,9 +18,6 @@ keyboard_button = [
     [
         KeyboardButton(text="🌐Wikipedia🌐"),
         KeyboardButton(text="⁉️Yordam⁉️")
-    ],
-    [
-        KeyboardButton(text="📊Bot Statistika📊")
     ]
 ]
 reply_markup = ReplyKeyboardMarkup(keyboard_button, resize_keyboard=True)
@@ -29,11 +27,18 @@ reply_markup = ReplyKeyboardMarkup(keyboard_button, resize_keyboard=True)
 def start_addBook(update, context):
     user_id = update.message.from_user.id
     first_name = update.message.from_user.first_name
-    context.user_data['first_name'] = first_name
-    context.user_data['user_id'] = user_id
-    # rreply_markup = ReplyKeyboardMarkup([[KeyboardButton(text='❌Bekor qilish❌')]], resize_keyboard=True)
-    update.message.reply_text("Botga o'z hissangizni qo'shmoqchiligingizdan biz bag'oyatda hursandmiz.\n\n<i>Sizdan iltimos siz qo'shmoqchi bo'lgan kitob botda bormi yoki yo'qligini tekshirib ko'ring</i>\n\n<b>Unday bo'lsa boshladik!!! Kitobning nomini yozing...</b>\n\nJarayonni bekor qilish uchun /cancel ni bosing", parse_mode="HTML")
-    return 'BOOK_TITLE'
+    conn = sqlite3.connect("MutolaaBot.db")
+    c = conn.cursor()
+    c.execute("SELECT user_id FROM users WHERE user_id=?", (user_id, ))
+    result = c.fetchone()
+    if result:
+        context.user_data['first_name'] = first_name
+        context.user_data['user_id'] = user_id
+        update.message.reply_text("Botga o'z hissangizni qo'shmoqchiligingizdan biz bag'oyatda hursandmiz.\n\n<i>Sizdan iltimos siz qo'shmoqchi bo'lgan kitob botda bormi yoki yo'qligini tekshirib ko'ring</i>\n\n<b>Unday bo'lsa boshladik!!! Kitobning nomini yozing...</b>\n\nJarayonni bekor qilish uchun /cancel ni bosing", parse_mode="HTML")
+        return 'BOOK_TITLE'
+    else:
+        update.message.reply_text("Siz botimizga kitob qo'shish uchun botdan ro'yxatdan o'tishingiz kerak ro'yxatdan o'tish uchun pastdagi tugmani bosing.", reply_markup=ReplyKeyboardMarkup([[KeyboardButton(text="Ro'yxatdan o'tish")]], resize_keyboard=True, one_time_keyboard=True))
+
 
 def book_title(update, context):
     book_title = update.message.text

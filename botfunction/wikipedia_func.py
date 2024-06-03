@@ -1,11 +1,28 @@
 import wikipedia
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, ChatAction
-from telegram.ext import CallbackContext, ConversationHandler
+from telegram.ext import CallbackContext, ConversationHandler, MessageHandler, Filters, CommandHandler
 from functools import wraps
 
 # Wikipedia kutubxonasiga ulanish
 wikipedia.set_lang("uz") # Maqola tilini sozlash, masalan "uz" uchun o'zbek, "en" uchun ingliz tili
 wikipedia.set_rate_limiting(True) # soatda faqat qancha so'roq yuborilishi mumkinligini belgilaydi.
+
+
+
+# Foydalanuvchiga ko'rinadigan tugmalar
+keyboard_button = [
+    [
+        KeyboardButton(text="📖Kitob o'qish📖"),
+        KeyboardButton(text="📚Kitob qo'shish📚")
+    ],
+    [
+        KeyboardButton(text="🌐Wikipedia🌐"),
+        KeyboardButton(text="⁉️Yordam⁉️")
+    ]
+]
+reply_markup = ReplyKeyboardMarkup(keyboard_button, resize_keyboard=True)
+
+
 
 def start_search(update, context):
     update.message.reply_text("Wikipediadan malumot qidirish uchun qidirmoqchi bo'lgan so'zni kiriting!")
@@ -38,3 +55,21 @@ def search(update: Update, context: CallbackContext):
         update.message.reply_text("Ma'lumotlar olishda xatolik yuz berdi. Iltimos, qayta urinib ko'ring.", reply_markup=ReplyKeyboardMarkup([
                                       [KeyboardButton(text="🔙Ortga qaytish🔙")]
                                   ], resize_keyboard=True))
+
+
+# ConversationHandlerni tugatish uchun funksiya
+def cancel(update, context):
+    update.message.reply_text(text='Asosiy menu', reply_markup=reply_markup)
+    return ConversationHandler.END
+
+
+
+def wiki_hand():
+    hand = ConversationHandler(
+        entry_points=[MessageHandler(Filters.regex(r"^🌐Wikipedia🌐"), start_search)],
+        fallbacks=[MessageHandler(Filters.regex("^🔙Ortga qaytish🔙$"), cancel)],
+        states={
+            'SEARCH_WIKI': [MessageHandler(Filters.text, search)],
+        }   
+    )
+    return hand

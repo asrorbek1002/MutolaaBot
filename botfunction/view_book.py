@@ -15,9 +15,6 @@ keyboard_button = [
     [
         KeyboardButton(text="🌐Wikipedia🌐"),
         KeyboardButton(text="⁉️Yordam⁉️")
-    ],
-    [
-        KeyboardButton(text="📊Bot Statistika📊")
     ]
 ]
 reply_markup = ReplyKeyboardMarkup(keyboard_button, resize_keyboard=True)
@@ -77,9 +74,11 @@ def view_book_for_send(update, context):
     user_id = update.message.from_user.id
     book_title = update.message.text
     book = book_title_view(book_title)
-    if book:    
+    if book:
         for bok in book:
-            if bok[7] == B_STATUS:
+            if bok[7] == A_STATUS:
+                continue
+            elif bok[7] == B_STATUS:
                 book_id = bok[2]
                 book_name = bok[3]
                 book_author = bok[4]

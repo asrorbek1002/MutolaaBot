@@ -13,6 +13,9 @@ keyboard = [
         [
             KeyboardButton(text='➕Admin qo\'shish➕'),
             KeyboardButton(text='➖Admin o\'chirish➖'),
+        ],
+        [
+        KeyboardButton(text="📊Bot Statistika📊")
         ]
     ]
 reply_markup = ReplyKeyboardMarkup(keyboard, one_time_keyboard=True, resize_keyboard=True)
@@ -105,9 +108,13 @@ def one_user_user_id(update, context):
     user_date = c.fetchall()
     if user_date:
         for i in user_date:
-            context.bot.send_message(chat_id=user_id, text=f"Foydalanuvchi Id: {i[0]}\nTelefon raqam: {i[1]}\nIsm: {i[2]}\nFamiliya: {i[3]}\nYosh: {i[4]}\nJinsi: {i[5]}\nManzili: {i[6]}")
+            context.bot.send_message(chat_id=user_id, text=f"Ro'yxatdan o'tgan foydalanuvchi topildi!\n\nFoydalanuvchi Id: {i[0]}\nTelefon raqam: {i[1]}\nIsm: {i[2]}\nFamiliya: {i[3]}\nYosh: {i[4]}\nJinsi: {i[5]}\nManzili: {i[6]}")
             context.bot.send_location(chat_id=user_id, latitude=i[7], longitude=i[8])
-        # print(f'Malumot Bor {user_date}')
+    elif user_date is None:
+        c.execute("SELECT * FROM notregisterusers WHERE user_id LIKE ?",  ('%' + user_id_date + '%',))
+        user_register_date = c.fetchone()
+        for i in user_register_date:
+            context.bot.send_message(chat_id=user_id,text=f"Ro'yxatdan o'tmagan foydalanuvchi topildi✅\n\nFoydalanuvchi ID: {i[3]}\nFoydalanuvchi ismi: {i[1]}\nFoydalanuvchi familiyasi: {i[2]}")
     else:
         update.message.reply_text("Malumot topilmadi\n/admin")
         return ConversationHandler.END

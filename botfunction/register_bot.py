@@ -7,9 +7,23 @@ from .geo_name import get_location_name
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 
+# Foydalanuvchiga ko'rinadigan tugmalar
+keyboard_button = [
+    [
+        KeyboardButton(text="📖Kitob o'qish📖"),
+        KeyboardButton(text="📚Kitob qo'shish📚")
+    ],
+    [
+        KeyboardButton(text="🌐Wikipedia🌐"),
+        KeyboardButton(text="⁉️Yordam⁉️")
+    ]
+]
+reply_markup = ReplyKeyboardMarkup(keyboard_button, resize_keyboard=True)
+
+
 
 def register_start(update, context):
-    reply_text = 'Salom! telefon raqamingizni kiriting:'
+    reply_text = 'Botga kitob qo\'shishingizdan avval o\'zingizni taniting:'
     reply_markup = ReplyKeyboardMarkup([
         [KeyboardButton(text="Telefon kontaktinngizni ulashing", request_contact=True)]
     ], resize_keyboard=True, one_time_keyboard=True)
@@ -59,8 +73,7 @@ def geolocation(update, context):
     user_id = update.message.from_user.id
     latitude = update.message.location.latitude
     longitude = update.message.location.longitude
-    # address = get_location_name(latitude, longitude)
-    address = "None"
+    address = get_location_name(latitude, longitude)
     context.user_data['user_id'] = user_id
     context.user_data['latitude'] = latitude
     context.user_data['longitude'] = longitude
@@ -83,7 +96,7 @@ def geolocation(update, context):
     conn.commit()
     conn.close()
     logging.info("User Registered")
-    update.message.reply_text("Rahmat! Botdan foydalanishingiz mumkin")
+    update.message.reply_text("Rahmat! Botdan foydalanishingiz mumkin", reply_markup=reply_markup)
     return ConversationHandler.END
 
 
@@ -94,8 +107,8 @@ def cancel(update, context):
 
 
 def register_handler():
-    register_handler = ConversationHandler(
-        entry_points=[CommandHandler('start', register_start)],
+    register_hand = ConversationHandler(
+        entry_points=[MessageHandler(Filters.regex(r"^Ro'yxatdan o'tish$"), register_start)],
 
         states={
             'PHONE_NUMBER': [MessageHandler(Filters.contact & ~Filters.command, phone_number)],
@@ -108,4 +121,4 @@ def register_handler():
         },
         fallbacks=[CommandHandler('cancel', cancel)]
     )
-    return register_handler
+    return register_hand
