@@ -129,7 +129,7 @@ def help(update, context):
 def main():
     """Start the bot."""
     # Telegram Bot tokenini yuklab olish
-    updater = Updater("6991187240:AAFOgEgjJasiOkmSmA5X2pFB9Ju9lgWD_Q4")
+    updater = Updater("6991187240:AAEBeLuIVyYUaIxgK__n9-r9J3FSFBTVIms")
 
     # Buyruqlarni qayta ishlash uchun dispetcherni yaratish
     dp = updater.dispatcher
